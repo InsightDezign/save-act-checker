@@ -1,5 +1,11 @@
 import { useState } from "react";
 
+function trackEvent(action, params) {
+  if (typeof window !== "undefined" && window.gtag) {
+    window.gtag("event", action, params);
+  }
+}
+
 const ENHANCED_ID_STATES = ["Michigan", "Minnesota", "New York", "Vermont", "Washington", "Idaho"];
 
 const ALL_STATES = [
@@ -42,6 +48,7 @@ function ShareBar({ severity }) {
   const copyToClipboard = () => {
     navigator.clipboard.writeText(`${shareText}\n\n${url}`).then(() => {
       setCopied(true);
+      trackEvent("share", { method: "copy_link" });
       setTimeout(() => setCopied(false), 2000);
     });
   };
@@ -64,10 +71,10 @@ function ShareBar({ severity }) {
         "{shareText}"
       </div>
       <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-        <a href={xUrl} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#000", color: "#fff", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "6px", padding: "10px 16px", fontSize: "13px", fontWeight: "700", fontFamily: "'Arial', sans-serif", textDecoration: "none" }}>
+        <a href={xUrl} target="_blank" rel="noreferrer" onClick={() => trackEvent("share", { method: "x" })} style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#000", color: "#fff", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "6px", padding: "10px 16px", fontSize: "13px", fontWeight: "700", fontFamily: "'Arial', sans-serif", textDecoration: "none" }}>
           𝕏 Post on X
         </a>
-        <a href={facebookUrl} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#1877f2", color: "#fff", border: "none", borderRadius: "6px", padding: "10px 16px", fontSize: "13px", fontWeight: "700", fontFamily: "'Arial', sans-serif", textDecoration: "none" }}>
+        <a href={facebookUrl} target="_blank" rel="noreferrer" onClick={() => trackEvent("share", { method: "facebook" })} style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#1877f2", color: "#fff", border: "none", borderRadius: "6px", padding: "10px 16px", fontSize: "13px", fontWeight: "700", fontFamily: "'Arial', sans-serif", textDecoration: "none" }}>
           Share on Facebook
         </a>
         <button onClick={copyToClipboard} style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: copied ? "rgba(16,185,129,0.15)" : "rgba(255,255,255,0.06)", color: copied ? "#10b981" : "#e8e4d9", border: `1px solid ${copied ? "rgba(16,185,129,0.4)" : "rgba(255,255,255,0.12)"}`, borderRadius: "6px", padding: "10px 16px", fontSize: "13px", fontWeight: "700", fontFamily: "'Arial', sans-serif", cursor: "pointer", transition: "all 0.2s" }}>
@@ -89,6 +96,7 @@ export default function SAVEActChecker() {
   const handleAnswer = (key, value) => {
     const newAnswers = { ...answers, [key]: value };
     setAnswers(newAnswers);
+    trackEvent("answer_question", { question: key, answer: value });
 
     const nextQ = currentQ + 1;
     if (nextQ >= QUESTIONS.length) {
@@ -175,6 +183,20 @@ export default function SAVEActChecker() {
   };
 
   const results = step === 3 ? getResults() : null;
+
+  if (results && !answers._tracked) {
+    trackEvent("check_completed", {
+      state: selectedState,
+      severity: results.severity,
+      naturalized: answers.naturalized,
+      name_changed: answers.nameChanged,
+      has_passport: answers.hasPassport,
+      has_real_id: answers.hasRealId,
+      has_birth_certificate: answers.hasBirthCertificate,
+      votes_by_mail: answers.votesByMail,
+    });
+    answers._tracked = true;
+  }
   const progress = step === 1 ? 25 : step === 2 ? 25 + (currentQ / QUESTIONS.length) * 50 : step === 3 ? 100 : 0;
 
   const styles = {
@@ -427,7 +449,7 @@ export default function SAVEActChecker() {
               </div>
             ))}
           </div>
-          <button style={styles.btn} onClick={() => setStep(1)}>Get Started →</button>
+          <button style={styles.btn} onClick={() => { trackEvent("get_started", {}); setStep(1); }}>Get Started →</button>
         </div>
       </div>
       <div style={styles.disclaimer}>
@@ -476,7 +498,7 @@ export default function SAVEActChecker() {
           <button
             style={{ ...styles.btn, opacity: selectedState ? 1 : 0.4, cursor: selectedState ? "pointer" : "default" }}
             disabled={!selectedState}
-            onClick={() => setStep(2)}
+            onClick={() => { trackEvent("state_selected", { state: selectedState }); setStep(2); }}
           >
             Continue →
           </button>
