@@ -13,28 +13,30 @@ const ALL_STATES = [
   "Virginia","Washington","West Virginia","Wisconsin","Wyoming","District of Columbia"
 ];
 
+const BILL_URL = "https://www.congress.gov/bill/119th-congress/house-bill/7296/text";
+
 const QUESTIONS = [
-  { key: "registered", text: "Are you currently registered to vote?", subtext: "Even registered voters will be subject to DHS database checks under the SAVE Act." },
+  { key: "registered", text: "Are you currently registered to vote?", subtext: "Even registered voters would be subject to DHS database checks under the SAVE Act." },
   { key: "naturalized", text: "Are you a naturalized citizen?", subtext: "Born outside the U.S. and became a citizen through the naturalization process." },
-  { key: "nameChanged", text: "Have you ever changed your name?", subtext: "Through marriage, divorce, or court order." },
-  { key: "marriedMoreThanOnce", text: "Have you been married more than once?", subtext: "Each marriage or divorce may require additional documentation." },
+  { key: "nameChanged", text: "Have you ever changed your legal name?", subtext: "Through marriage, divorce, or court order." },
   { key: "hasPassport", text: "Do you have a valid U.S. passport?", subtext: "A current, unexpired U.S. passport is accepted as standalone proof of citizenship." },
-  { key: "hasRealId", text: "Do you have a REAL ID or state driver's license?", subtext: "The gold or black star on your license indicates REAL ID compliance." },
-  { key: "votesByMail", text: "Do you vote by mail?", subtext: "Mail-in voting will require additional steps under the SAVE Act." },
+  { key: "hasRealId", text: "Do you have a REAL ID-compliant driver's license or state ID?", subtext: "The gold or black star on your license indicates REAL ID compliance." },
+  { key: "hasBirthCertificate", text: "Do you have a certified copy of your U.S. birth certificate?", subtext: "A certified copy is issued by a state vital records office — not a hospital souvenir certificate." },
+  { key: "votesByMail", text: "Do you typically vote by mail?", subtext: "Mail-in voting would require additional steps under the SAVE Act." },
 ];
 
-function ShareBar({ state, severity }) {
+function ShareBar({ severity }) {
   const [copied, setCopied] = useState(false);
 
   const messages = {
-    clear: `I just checked my voter status under the SAVE Act — I appear ready, but millions of Americans aren't. Find out if YOU are: saveactcheck.com`,
-    warning: `I just found out I'll need extra documents to stay registered to vote under the SAVE Act. Find out what YOU need: saveactcheck.com`,
+    clear: `I just checked my voter status under the SAVE Act — I appear ready, but millions of Americans may not be. Find out if YOU are: saveactcheck.com`,
+    warning: `I just found out I may need extra documents to stay registered to vote under the SAVE Act. Find out what YOU need: saveactcheck.com`,
     flagged: `The SAVE Act could prevent me from voting without significant paperwork. Find out how it affects you: saveactcheck.com`,
   };
 
   const shareText = messages[severity] || messages.warning;
   const url = "https://saveactcheck.com";
-  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&hashtags=SAVEAct,VoterRights`;
+  const xUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&hashtags=SAVEAct,VoterRights`;
   const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(shareText)}`;
 
   const copyToClipboard = () => {
@@ -56,13 +58,13 @@ function ShareBar({ state, severity }) {
         Help others find out
       </div>
       <div style={{ fontSize: "14px", color: "#9a9484", fontFamily: "'Arial', sans-serif", marginBottom: "16px", lineHeight: "1.5" }}>
-        Most people don't know what the SAVE Act requires. Share this tool — especially with family members who might be affected.
+        Most people don't know what the SAVE Act would require. Share this tool — especially with family members who might be affected.
       </div>
       <div style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px", padding: "14px 16px", fontSize: "13px", color: "#e8e4d9", fontFamily: "'Arial', sans-serif", marginBottom: "16px", lineHeight: "1.5", fontStyle: "italic" }}>
         "{shareText}"
       </div>
       <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-        <a href={twitterUrl} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#000", color: "#fff", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "6px", padding: "10px 16px", fontSize: "13px", fontWeight: "700", fontFamily: "'Arial', sans-serif", textDecoration: "none" }}>
+        <a href={xUrl} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#000", color: "#fff", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "6px", padding: "10px 16px", fontSize: "13px", fontWeight: "700", fontFamily: "'Arial', sans-serif", textDecoration: "none" }}>
           𝕏 Post on X
         </a>
         <a href={facebookUrl} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#1877f2", color: "#fff", border: "none", borderRadius: "6px", padding: "10px 16px", fontSize: "13px", fontWeight: "700", fontFamily: "'Arial', sans-serif", textDecoration: "none" }}>
@@ -88,13 +90,7 @@ export default function SAVEActChecker() {
     const newAnswers = { ...answers, [key]: value };
     setAnswers(newAnswers);
 
-    // Skip "married more than once" if they said no to name change
-    let nextQ = currentQ + 1;
-    if (key === "nameChanged" && value === "no") {
-      // skip marriedMoreThanOnce
-      nextQ = currentQ + 2;
-    }
-
+    const nextQ = currentQ + 1;
     if (nextQ >= QUESTIONS.length) {
       setStep(3);
     } else {
@@ -108,7 +104,7 @@ export default function SAVEActChecker() {
 
     // Passport check
     if (answers.hasPassport === "yes") {
-      items.push({ type: "good", icon: "✓", title: "Passport accepted", detail: "A valid U.S. passport serves as standalone proof of citizenship. Bring it when registering to vote." });
+      items.push({ type: "good", icon: "✓", title: "Passport accepted", detail: "A valid U.S. passport serves as standalone proof of citizenship. You would bring it when registering to vote." });
     }
 
     // REAL ID check
@@ -118,50 +114,60 @@ export default function SAVEActChecker() {
       } else {
         if (answers.hasPassport !== "yes") {
           severity = "warning";
-          items.push({ type: "warning", icon: "⚠", title: "Your REAL ID is not enough", detail: `${selectedState} is one of 44 states where a standard REAL ID does not indicate citizenship. You will also need a birth certificate or naturalization certificate to register.` });
+          items.push({ type: "warning", icon: "⚠", title: "Your REAL ID alone would not be enough", detail: `${selectedState} is among the majority of states where a standard REAL ID does not indicate citizenship. You would also need a birth certificate or naturalization certificate to register.` });
         }
       }
     }
 
-    // No documents
-    if (answers.hasPassport === "no" && answers.hasRealId === "no") {
+    // Birth certificate check (relevant when no passport)
+    if (answers.hasPassport !== "yes") {
+      if (answers.hasBirthCertificate === "yes" && answers.naturalized !== "yes") {
+        items.push({ type: "good", icon: "✓", title: "Birth certificate available", detail: "A certified U.S. birth certificate can serve as proof of citizenship alongside a photo ID. Keep it accessible for registration." });
+      } else if (answers.hasBirthCertificate === "no" && answers.naturalized !== "yes") {
+        if (severity === "clear") severity = "warning";
+        items.push({ type: "warning", icon: "⚠", title: "No birth certificate on hand", detail: "Without a passport or birth certificate, you would need to request a certified copy from the vital records office in the state where you were born. Processing times vary by state." });
+      }
+    }
+
+    // No documents at all
+    if (answers.hasPassport === "no" && answers.hasRealId === "no" && answers.hasBirthCertificate === "no" && answers.naturalized !== "yes") {
       severity = "flagged";
-      items.push({ type: "danger", icon: "✗", title: "No qualifying ID found", detail: "Without a passport or valid photo ID, you will need to obtain both a government-issued photo ID and a birth certificate or naturalization certificate before you can register." });
+      items.push({ type: "danger", icon: "✗", title: "No qualifying documents found", detail: "Without a passport, photo ID, or birth certificate, you would need to obtain both a government-issued photo ID and a certified birth certificate before you could register." });
     }
 
     // Naturalized citizen
     if (answers.naturalized === "yes") {
       if (severity === "clear") severity = "warning";
-      items.push({ type: "warning", icon: "⚠", title: "Naturalization certificate required", detail: "As a naturalized citizen, you will need your Naturalization Certificate (Form N-550 or N-570). The name on this document must match your current legal name." });
+      items.push({ type: "warning", icon: "⚠", title: "Naturalization certificate would be required", detail: "As a naturalized citizen, you would need your Naturalization Certificate (Form N-550 or N-570). The name on this document must match your current legal name." });
     }
 
     // Name change
     if (answers.nameChanged === "yes") {
-      if (severity === "clear") severity = "warning";
-      if (answers.marriedMoreThanOnce === "yes") {
-        items.push({ type: "warning", icon: "⚠", title: "Full name-change document chain required", detail: "You have changed your name more than once. You will need every marriage certificate, divorce decree, or court order creating an unbroken chain from your birth name to your current legal name." });
+      if (answers.hasPassport === "yes") {
+        items.push({ type: "good", icon: "✓", title: "Passport may cover your name change", detail: "If your passport reflects your current legal name, it should serve as sufficient proof. If it shows a previous name, you would need documentation connecting it to your current name." });
       } else {
-        items.push({ type: "warning", icon: "⚠", title: "Name-change documentation required", detail: "You must provide documentation connecting your current name to the name on your citizenship documents — such as a marriage certificate or court order." });
+        if (severity === "clear") severity = "warning";
+        items.push({ type: "warning", icon: "⚠", title: "Name-change documentation would be required", detail: "You would need every document connecting your current legal name to the name on your citizenship records — such as marriage certificates, divorce decrees, or court orders — forming an unbroken chain." });
       }
     }
 
     // Already registered
     if (answers.registered === "yes") {
       if (severity === "clear") severity = "warning";
-      items.push({ type: "warning", icon: "⚠", title: "Your registration will be re-verified", detail: "Under the SAVE Act, every name on every state voter roll must be run through the DHS SAVE system within 30 days of enactment. If flagged, you will receive notice and must prove citizenship or be removed — even if you have voted for years." });
+      items.push({ type: "warning", icon: "⚠", title: "Your registration would be re-verified", detail: "Under the SAVE Act, states would be required to run every name on their voter rolls through the DHS SAVE system within 30 days of enactment. If flagged, you would receive notice and need to prove citizenship or face removal — even if you have voted for years." });
     } else if (answers.registered === "no") {
-      items.push({ type: "info", icon: "→", title: "You must register in person", detail: "Under the SAVE Act, all voter registration requires in-person presentation of citizenship documents at an election office, even if you submit a mail registration form." });
+      items.push({ type: "info", icon: "→", title: "You would need to register in person", detail: "Under the SAVE Act, voter registration would require in-person presentation of citizenship documents at an election office, even if you submit a mail registration form." });
     }
 
     // Mail voting
     if (answers.votesByMail === "yes") {
       if (severity === "clear") severity = "warning";
-      items.push({ type: "warning", icon: "⚠", title: "Mail voting now requires photo ID", detail: "Under the SAVE Act, mail-in ballots must be accompanied by a copy of a valid photo ID, or the last 4 digits of your Social Security number plus a signed affidavit stating you cannot obtain a photo ID." });
+      items.push({ type: "warning", icon: "⚠", title: "Mail voting would require photo ID", detail: "Under the SAVE Act, you would need to include a copy of a valid photo ID when both requesting and submitting an absentee ballot." });
     }
 
     const statusMap = {
       clear: { label: "You appear ready", color: "#10b981", bg: "rgba(16,185,129,0.1)", border: "#10b981" },
-      warning: { label: "Action required", color: "#f59e0b", bg: "rgba(245,158,11,0.1)", border: "#f59e0b" },
+      warning: { label: "Action may be required", color: "#f59e0b", bg: "rgba(245,158,11,0.1)", border: "#f59e0b" },
       flagged: { label: "At high risk of being unable to vote", color: "#ef4444", bg: "rgba(239,68,68,0.1)", border: "#ef4444" },
     };
 
@@ -411,10 +417,10 @@ export default function SAVEActChecker() {
         <div style={styles.card}>
           <div style={styles.cardTitle}>What this tool does</div>
           <div style={styles.cardSub}>
-            Answer a few questions about your situation. We'll tell you whether you'd be at risk of losing your registration, what documents you'd need, and what steps to take — based on the actual text of the bill.
+            Answer a few questions about your situation. We'll tell you whether you'd be at risk of losing your registration, what documents you'd need, and what steps to take — based on the <a href={BILL_URL} target="_blank" rel="noreferrer" style={{ color: "#f59e0b" }}>actual text of the bill</a>.
           </div>
           <div style={{ display: "flex", gap: "32px", marginBottom: "32px" }}>
-            {[["~3 min", "to complete"], ["50 states", "covered"], ["Free", "no signup"]].map(([big, small]) => (
+            {[["~3 min", "to complete"], ["50 states + DC", "covered"], ["Free", "no signup"]].map(([big, small]) => (
               <div key={big}>
                 <div style={{ fontSize: "22px", fontWeight: "700", color: "#f59e0b" }}>{big}</div>
                 <div style={{ fontSize: "12px", color: "#9a9484", fontFamily: "'Arial', sans-serif", textTransform: "uppercase", letterSpacing: "1px" }}>{small}</div>
@@ -425,7 +431,7 @@ export default function SAVEActChecker() {
         </div>
       </div>
       <div style={styles.disclaimer}>
-        <strong style={{ color: "#e8e4d9" }}>Important:</strong> This tool presents information as if the SAVE Act has been signed into law. It is for educational purposes only and does not constitute legal advice. Requirements may change. Source: H.R. 7296 / S. 1383, passed House 218-213, February 11, 2026.
+        <strong style={{ color: "#e8e4d9" }}>Important:</strong> This tool presents information as if the SAVE Act has been signed into law. It is for educational purposes only and does not constitute legal advice. Requirements may change. Source: <a href={BILL_URL} target="_blank" rel="noreferrer" style={{ color: "#f59e0b" }}>H.R. 7296</a>, passed House 218–213, February 11, 2026. The bill must still pass the Senate and be signed by the President to become law.
       </div>
     </div>
   );
@@ -464,7 +470,7 @@ export default function SAVEActChecker() {
             }}>
               {hasEnhancedId
                 ? `✓ ${selectedState} is one of 6 states that issues an Enhanced ID indicating citizenship.`
-                : `⚠ ${selectedState} is one of 44 states where a standard REAL ID does not indicate citizenship.`}
+                : `⚠ ${selectedState} is among the majority of states where a standard REAL ID does not indicate citizenship.`}
             </div>
           )}
           <button
@@ -481,12 +487,6 @@ export default function SAVEActChecker() {
 
   // QUESTIONS
   if (step === 2) {
-    const visibleQuestions = QUESTIONS.filter((q, i) => {
-      if (q.key === "marriedMoreThanOnce" && answers.nameChanged !== "yes") return false;
-      return true;
-    });
-    const visibleIndex = visibleQuestions.findIndex(q => q.key === QUESTIONS[currentQ]?.key);
-    const totalVisible = visibleQuestions.length;
     const q = QUESTIONS[currentQ];
 
     return (
@@ -498,7 +498,7 @@ export default function SAVEActChecker() {
         <div style={styles.progressBar}><div style={styles.progressFill} /></div>
         <div style={{ width: "100%", maxWidth: "680px" }}>
           <div style={styles.card}>
-            <div style={styles.qCounter}>Question {visibleIndex + 1} of {totalVisible}</div>
+            <div style={styles.qCounter}>Question {currentQ + 1} of {QUESTIONS.length}</div>
             <div style={styles.qText}>{q.text}</div>
             <div style={styles.qSub}>{q.subtext}</div>
             <div style={styles.answerRow}>
@@ -542,14 +542,14 @@ export default function SAVEActChecker() {
               <div style={styles.statusLabel(results.status.color)}>{results.status.label}</div>
               <div style={styles.statusSub}>
                 {results.severity === "clear" && "Review the details below to confirm."}
-                {results.severity === "warning" && "You will need to take steps before or after the law takes effect."}
+                {results.severity === "warning" && "You would need to take steps before or after the law takes effect."}
                 {results.severity === "flagged" && "Without action, you may be unable to register or vote."}
               </div>
             </div>
           </div>
 
           <div style={styles.card}>
-            <div style={{ ...styles.cardTitle, marginBottom: "24px" }}>What this means for you</div>
+            <div style={{ ...styles.cardTitle, marginBottom: "24px" }}>What this would mean for you</div>
             {results.items.map((item, i) => {
               const ri = styles.resultItem(item.type);
               return (
@@ -564,15 +564,16 @@ export default function SAVEActChecker() {
               <div style={{ ...styles.cardTitle, fontSize: "16px", marginBottom: "16px" }}>What to do now</div>
               <div style={{ fontSize: "13px", fontFamily: "'Arial', sans-serif", color: "#9a9484", lineHeight: "1.8" }}>
                 {answers.hasPassport !== "yes" && <div>→ <strong style={{ color: "#e8e4d9" }}>Get a passport</strong> — Apply at <a href="https://travel.state.gov" target="_blank" rel="noreferrer" style={{ color: "#f59e0b" }}>travel.state.gov</a>. Standard processing takes 6–8 weeks.</div>}
-                {answers.nameChanged === "yes" && <div>→ <strong style={{ color: "#e8e4d9" }}>Gather name-change documents</strong> — Every marriage certificate, divorce decree, or court order connecting your names.</div>}
+                {answers.nameChanged === "yes" && answers.hasPassport !== "yes" && <div>→ <strong style={{ color: "#e8e4d9" }}>Gather name-change documents</strong> — Every marriage certificate, divorce decree, or court order connecting your names.</div>}
                 {answers.naturalized === "yes" && <div>→ <strong style={{ color: "#e8e4d9" }}>Locate your Naturalization Certificate</strong> — If lost, request a replacement at <a href="https://www.uscis.gov" target="_blank" rel="noreferrer" style={{ color: "#f59e0b" }}>uscis.gov</a>.</div>}
-                {!hasEnhancedId && answers.hasRealId === "yes" && answers.hasPassport !== "yes" && <div>→ <strong style={{ color: "#e8e4d9" }}>Get a certified birth certificate</strong> — Contact the vital records office in the state where you were born.</div>}
-                <div>→ <strong style={{ color: "#e8e4d9" }}>Monitor your registration status</strong> — Check regularly with your state's election office, especially after this law takes effect.</div>
+                {answers.hasBirthCertificate === "no" && answers.naturalized !== "yes" && answers.hasPassport !== "yes" && <div>→ <strong style={{ color: "#e8e4d9" }}>Get a certified birth certificate</strong> — Contact the vital records office in the state where you were born.</div>}
+                <div>→ <strong style={{ color: "#e8e4d9" }}>Monitor your registration status</strong> — Check regularly with your state's election office, especially if this bill becomes law.</div>
+                <div>→ <strong style={{ color: "#e8e4d9" }}>Read the bill</strong> — <a href={BILL_URL} target="_blank" rel="noreferrer" style={{ color: "#f59e0b" }}>Full text of H.R. 7296 on Congress.gov</a></div>
               </div>
             </div>
           </div>
 
-          <ShareBar state={selectedState} severity={results.severity} />
+          <ShareBar severity={results.severity} />
 
           <div style={{ marginTop: "16px", display: "flex", gap: "12px", flexWrap: "wrap" }}>
             <button style={styles.btnOutline} onClick={resetAll}>Start Over</button>
@@ -580,9 +581,11 @@ export default function SAVEActChecker() {
           </div>
         </div>
         <div style={styles.disclaimer}>
-          <strong style={{ color: "#e8e4d9" }}>Disclaimer:</strong> This tool presents results as if the SAVE Act is law. It is for educational purposes only, not legal advice. Results are based on the bill text of H.R. 7296 as passed by the House on February 11, 2026. The bill must still pass the Senate and be signed by the President to become law. Requirements may change during the legislative process.
+          <strong style={{ color: "#e8e4d9" }}>Disclaimer:</strong> This tool presents results as if the SAVE Act were law. It is for educational purposes only, not legal advice. Results are based on the bill text of <a href={BILL_URL} target="_blank" rel="noreferrer" style={{ color: "#f59e0b" }}>H.R. 7296</a> as passed by the House on February 11, 2026. The bill must still pass the Senate and be signed by the President to become law. Requirements may change during the legislative process.
         </div>
       </div>
     );
   }
+
+  return null;
 }
