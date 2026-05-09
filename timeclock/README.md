@@ -1,81 +1,124 @@
 # TimeClock
 
-Lightweight Electron-based Windows desktop time tracker. Tracks billable work time
-by client and task with start / pause / resume / stop, persists to local SQLite,
-auto-pauses on screen lock.
+Lightweight Electron-based Windows desktop time tracker. Tracks billable
+work time by client and task with start / pause / resume / stop, persists
+to local SQLite, auto-pauses on screen lock, and lives as a floating
+button plus a system tray icon.
 
-## Status — Phase 1 (core)
+## Status
 
-This pass builds the foundation only:
+Phases 1–4 of the build plan are implemented:
 
-- SQLite schema + CRUD (`main/db.js`)
-- Timer state machine: IDLE / RUNNING / PAUSED (`main/timer.js`)
-- Screen lock/unlock + suspend/resume auto-pause (`main/powerEvents.js`)
-- IPC handlers (`main/ipc.js`) and `contextBridge` API (`preload/preload.js`)
-- App lifecycle (`main/main.js`) with timer-state restore on startup
+- **Phase 1 — Core**
+  SQLite schema + CRUD, timer state machine (IDLE/RUNNING/PAUSED), screen
+  lock + suspend auto-pause, IPC handlers, `contextBridge` API, app
+  lifecycle with single-instance lock and crash-restore from open entries.
+- **Phase 2 — UI**
+  Floating button (frameless, transparent, draggable; gray/green-pulse/yellow
+  states; right-click context menu). Status panel (idle / running / paused
+  views, anchored next to the floating button, hides on blur). System tray
+  (state-aware icon + tooltip + context menu with quick pause/stop and a
+  Start-on-Login toggle).
+- **Phase 3 — Manager**
+  Manager window with four tabs: **Log** (filterable entry list with
+  inline notes editing and totals), **Clients** (add / rename / deactivate /
+  reactivate, optional show-inactive), **Tasks** (per-client, same actions),
+  **Settings** (Start-on-Login toggle).
+- **Phase 4 — Polish**
+  Last-used client/task pre-selected in the panel, live elapsed ticker,
+  confirmation dialog before stopping a timer that's been running over an
+  hour, single-instance lock so re-launching just shows the panel,
+  graceful clean stop on quit.
 
-There is **no real UI yet** — Phase 1 ships a small dev window with a few buttons
-plus DevTools so you can poke at `window.timeclock.*`. Phases 2–4 will add the
-floating button, status panel, system tray, and manager window.
+Phase 5 — WHMCS sync — is **not** in this build. The placeholder
+`whmcs_client_id` / `whmcs_task_id` / `synced` columns are already in the
+schema for it.
 
 ## Run it
 
-The project lives in this `timeclock/` subdirectory.
-
 ```bash
 cd timeclock
-npm install      # rebuilds better-sqlite3 against Electron via postinstall
-npm run dev      # opens the Phase 1 dev window with DevTools
+npm install        # postinstall rebuilds better-sqlite3 against Electron
+npm run dev        # opens the floating button + tray; --dev opens DevTools
+# or
+npm start          # production-style launch
 ```
 
-If `better-sqlite3` complains about ABI mismatch (rare), force a rebuild:
+Re-launching the app while it's already running just brings the panel
+forward (single-instance lock).
+
+`better-sqlite3` ABI mismatch (rare):
 
 ```bash
 npm run rebuild
 ```
 
-The SQLite file lives in your Electron `userData` folder
-(on Windows: `%APPDATA%\TimeClock\timeclock.db`).
+## How it looks
 
-## Smoke test
+- A small circular floating button sits in the bottom-right of your screen.
+  Drag it anywhere — its position is remembered. Left-click toggles the
+  status panel. Right-click opens a context menu (Show Panel, Open
+  Manager, Hide, Quit).
+- Click the tray icon for the same panel toggle. Right-click the tray
+  icon for the full context menu.
+- The panel either lets you pick a client + task and start, or shows the
+  running entry with pause/resume/stop. Last-used selection is
+  pre-filled the next time you go IDLE.
+- Lock your screen (Win+L) → the running timer auto-pauses, and unlock
+  brings the panel back so you can resume or stop.
 
-In the dev window:
+## Architecture
 
-1. Click **Seed: client + task** — creates one client and one task.
-2. Click **Start (last task)** — timer goes RUNNING; elapsed seconds tick up.
-3. Click **Pause** / **Resume** — state pill changes; elapsed stops/starts.
-4. Click **Stop** — entry's `stopped_at` is filled in.
-5. Lock your screen (Win+L) while running — the timer auto-pauses.
-
-Or open DevTools and call directly:
-
-```js
-await window.timeclock.clients.create('Acme');
-await window.timeclock.tasks.create(1, 'Onboarding');
-await window.timeclock.timer.start(1);
-await window.timeclock.timer.getState();
-await window.timeclock.entries.list({});
+```
+main/
+  main.js          app lifecycle, single-instance lock, wiring
+  windows.js       floating + panel + manager creation, panel anchor logic
+  tray.js          state-aware tray icon + tooltip + context menu
+  db.js            better-sqlite3 schema + CRUD (clients, tasks, entries, pauses)
+  timer.js         in-memory state machine; restoreFromDb on startup
+  powerEvents.js   powerMonitor lock/unlock + suspend/resume auto-pause
+  ipc.js           ipcMain handlers (timer, clients, tasks, entries, app, drag)
+preload/
+  preload.js       contextBridge exposing window.timeclock with allowlisted events
+renderer/
+  floating/        floating button window
+  panel/           status panel (idle/running/paused views)
+  manager/         manager window (Log, Clients, Tasks, Settings)
+assets/
+  *.png            placeholder icons (replace with .ico for Windows tray)
 ```
 
-## Architecture notes
-
-- All DB access is in the main process. Renderers go through IPC only.
-- Timer state lives in memory in `timer.js`; persistent truth is the DB
-  (`time_entries.started_at` + `pause_events`). Elapsed is always recomputed
-  from timestamps, never stored as a counter, so it survives restarts.
-- On startup, `timer.restoreFromDb()` looks for an open `time_entries` row
-  (no `stopped_at`) and resumes its in-memory state. If a `pause_events` row
-  for that entry has no `resumed_at`, the timer comes back as PAUSED.
+- **All DB access is in main**; renderers go through IPC only.
+- **Elapsed time is always recomputed from timestamps** —
+  `(now - started_at) - paused_seconds`. Nothing depends on a counter, so
+  the timer survives crashes and restarts.
+- On startup, `timer.restoreFromDb()` looks for an open `time_entries`
+  row (no `stopped_at`) and resumes it. If a `pause_events` row for that
+  entry has no `resumed_at`, the timer comes back as PAUSED.
+- The tray keeps the app alive when all windows are closed.
+- Panel hides on blur (clicking outside dismisses it).
 
 ## Icons
 
-`assets/*.png` are placeholder colored circles (idle = gray, running = green,
-paused = yellow, app = blue). Replace with real `.ico` files before
-production-building for Windows tray rendering quality.
+`assets/*.png` are placeholder colored circles (idle gray, running green,
+paused yellow, app blue). Replace with proper `.ico` files before
+production-building for crisp Windows tray rendering. The
+`electron-builder.yml` references `assets/icon.ico` for the installer
+icon — drop that file in before `npm run dist`.
 
-## Next phases
+## Build the installer
 
-- Phase 2 — floating button window, status panel, system tray
-- Phase 3 — manager window (log, clients, tasks, settings tabs)
-- Phase 4 — polish (last-used pre-select, confirm-on-stop, error UX)
-- Phase 5 — WHMCS sync (future)
+```bash
+npm run dist       # NSIS installer in dist/
+```
+
+The installer goes to `%APPDATA%\TimeClock` (per-user, no admin needed).
+The SQLite database lives next to it at
+`%APPDATA%\TimeClock\timeclock.db`.
+
+## Future — Phase 5 (WHMCS)
+
+- WHMCS API credentials in Settings
+- Pull clients + tasks from WHMCS
+- Push completed time entries as project task time logs
+- Mark entries `synced = 1`

@@ -6,7 +6,6 @@ files:
   - main/**/*
   - preload/**/*
   - renderer/**/*
-  - dev/**/*
   - assets/**/*
   - package.json
 win:

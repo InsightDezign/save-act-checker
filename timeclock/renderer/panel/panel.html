@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'" />
+    <title>TimeClock — Panel</title>
+    <link rel="stylesheet" href="panel.css" />
+  </head>
+  <body>
+    <div class="panel">
+      <header>
+        <span id="status-pill" class="pill idle">IDLE</span>
+        <button id="manager-btn" class="iconbtn" title="Open Manager" aria-label="Open Manager">⚙</button>
+      </header>
+
+      <!-- IDLE view -->
+      <section id="view-idle" class="view">
+        <label class="field">
+          <span>Client</span>
+          <select id="client-select"></select>
+        </label>
+        <label class="field">
+          <span>Task</span>
+          <select id="task-select" disabled></select>
+        </label>
+        <div id="empty-hint" class="hint hidden">
+          No clients yet. Open the Manager to add one.
+        </div>
+        <div class="actions">
+          <button id="dismiss-idle" class="ghost" type="button">Dismiss</button>
+          <button id="start-btn" class="primary" type="button" disabled>Start</button>
+        </div>
+      </section>
+
+      <!-- RUNNING / PAUSED view -->
+      <section id="view-active" class="view hidden">
+        <div class="active-meta">
+          <div class="client-name" id="active-client">—</div>
+          <div class="task-name" id="active-task">—</div>
+        </div>
+        <div class="elapsed" id="elapsed">00:00:00</div>
+        <div class="actions">
+          <button id="dismiss-active" class="ghost" type="button">Dismiss</button>
+          <button id="pause-btn" class="secondary" type="button">Pause</button>
+          <button id="resume-btn" class="secondary hidden" type="button">Resume</button>
+          <button id="stop-btn" class="danger" type="button">Stop</button>
+        </div>
+      </section>
+    </div>
+    <script src="panel.js"></script>
+  </body>
+</html>

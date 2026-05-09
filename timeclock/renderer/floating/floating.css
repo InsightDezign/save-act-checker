@@ -1,0 +1,60 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  width: 64px;
+  height: 64px;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body {
+  display: grid;
+  place-items: center;
+}
+
+.btn {
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: 50%;
+  cursor: grab;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+  -webkit-app-region: no-drag;
+}
+
+.btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+.btn:active {
+  cursor: grabbing;
+  transform: scale(0.97);
+}
+
+.btn.idle    { background: radial-gradient(circle at 30% 30%, #888, #555); }
+.btn.running {
+  background: radial-gradient(circle at 30% 30%, #4ade80, #16a34a);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+.btn.paused  { background: radial-gradient(circle at 30% 30%, #fde68a, #d4a017); }
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 4px 14px rgba(22, 163, 74, 0.35); }
+  50%      { box-shadow: 0 4px 22px rgba(22, 163, 74, 0.85); }
+}
+
+.icon {
+  width: 28px;
+  height: 28px;
+  pointer-events: none;
+}
+
+.hidden {
+  display: none;
+}
