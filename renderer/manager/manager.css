@@ -1,0 +1,189 @@
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #1a1a1a;
+  color: #e6e6e6;
+  font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  height: 100vh;
+}
+
+body { display: flex; flex-direction: column; }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 8px 16px;
+  background: #141414;
+  border-bottom: 1px solid #2a2a2a;
+}
+.title {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #fff;
+}
+.tabs {
+  display: flex;
+  gap: 2px;
+}
+.tab {
+  background: transparent;
+  border: 0;
+  color: #aaa;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  border-radius: 4px;
+}
+.tab:hover { color: #fff; background: #222; }
+.tab.active {
+  color: #fff;
+  background: #2d6cdf;
+}
+
+main {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+}
+.page { display: none; }
+.page.active { display: flex; flex-direction: column; gap: 12px; height: calc(100vh - 90px); }
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.toolbar label { display: flex; align-items: center; gap: 6px; color: #bbb; }
+.grow { flex: 1; }
+.muted { color: #888; }
+.small { font-size: 12px; }
+
+input[type="text"], input[type="date"], select, textarea {
+  background: #2a2a2a;
+  color: #e6e6e6;
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+}
+input:focus, select:focus, textarea:focus { border-color: #2d6cdf; }
+
+button {
+  font: inherit;
+  border: 0;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  color: #fff;
+  background: #3a3a3a;
+}
+button:hover:not(:disabled) { background: #4a4a4a; }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+button.primary { background: #2d6cdf; }
+button.primary:hover:not(:disabled) { background: #3b7df0; }
+button.ghost { background: transparent; color: #aaa; }
+button.ghost:hover:not(:disabled) { background: #2a2a2a; color: #fff; }
+button.danger { background: #b91c1c; }
+button.danger:hover:not(:disabled) { background: #dc2626; }
+
+.checkbox { display: flex; align-items: center; gap: 6px; color: #ccc; }
+
+.table-wrap {
+  flex: 1;
+  overflow: auto;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  background: #1e1e1e;
+}
+
+table.grid {
+  width: 100%;
+  border-collapse: collapse;
+}
+table.grid th, table.grid td {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid #2a2a2a;
+  vertical-align: middle;
+}
+table.grid th {
+  background: #1a1a1a;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 11px;
+  font-weight: 600;
+}
+table.grid tr:hover td { background: #232323; }
+table.grid td.empty {
+  text-align: center;
+  color: #888;
+  padding: 24px 12px;
+}
+table.grid .right { text-align: right; }
+table.grid .actions-cell {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.note-input {
+  width: 100%;
+  background: transparent;
+  border: 1px solid transparent;
+  color: inherit;
+  padding: 4px 6px;
+  border-radius: 3px;
+}
+.note-input:hover { border-color: #333; }
+.note-input:focus { border-color: #2d6cdf; background: #181818; }
+
+.tag {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #2a2a2a;
+  color: #ccc;
+}
+.tag.active   { background: #14532d; color: #bbf7d0; }
+.tag.inactive { background: #3a3a3a; color: #aaa; }
+.tag.open     { background: #1e3a8a; color: #bfdbfe; }
+
+.settings {
+  max-width: 540px;
+}
+.settings h2 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #888;
+  margin: 18px 0 8px;
+}
+.settings .row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 8px 0;
+}
+.settings .path {
+  display: inline-block;
+  background: #1e1e1e;
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 12px;
+  word-break: break-all;
+  color: #ccc;
+}

@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'" />
+    <title>TimeClock — Manager</title>
+    <link rel="stylesheet" href="manager.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="title">TimeClock</div>
+      <nav class="tabs">
+        <button class="tab" data-tab="log">Log</button>
+        <button class="tab" data-tab="clients">Clients</button>
+        <button class="tab" data-tab="tasks">Tasks</button>
+        <button class="tab" data-tab="settings">Settings</button>
+      </nav>
+    </header>
+
+    <main>
+      <!-- LOG -->
+      <section class="page" data-page="log">
+        <div class="toolbar">
+          <label>
+            Client:
+            <select id="log-client-filter"><option value="">All</option></select>
+          </label>
+          <label>
+            From: <input type="date" id="log-from" />
+          </label>
+          <label>
+            To: <input type="date" id="log-to" />
+          </label>
+          <button id="log-refresh" class="ghost">Refresh</button>
+          <span class="grow"></span>
+          <span id="log-summary" class="muted"></span>
+        </div>
+        <div class="table-wrap">
+          <table class="grid">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Client</th>
+                <th>Task</th>
+                <th>Duration</th>
+                <th>Notes</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="log-body">
+              <tr><td colspan="6" class="empty">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- CLIENTS -->
+      <section class="page" data-page="clients">
+        <div class="toolbar">
+          <input type="text" id="client-new-name" placeholder="New client name…" />
+          <button id="client-add" class="primary">Add</button>
+          <span class="grow"></span>
+          <label class="checkbox">
+            <input type="checkbox" id="client-show-inactive" />
+            Show inactive
+          </label>
+        </div>
+        <div class="table-wrap">
+          <table class="grid">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Status</th>
+                <th class="right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="client-body">
+              <tr><td colspan="3" class="empty">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TASKS -->
+      <section class="page" data-page="tasks">
+        <div class="toolbar">
+          <label>
+            Client:
+            <select id="task-client-select"></select>
+          </label>
+          <input type="text" id="task-new-name" placeholder="New task name…" />
+          <button id="task-add" class="primary">Add Task</button>
+          <span class="grow"></span>
+          <label class="checkbox">
+            <input type="checkbox" id="task-show-inactive" />
+            Show inactive
+          </label>
+        </div>
+        <div class="table-wrap">
+          <table class="grid">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Status</th>
+                <th class="right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="task-body">
+              <tr><td colspan="3" class="empty">Select a client.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section class="page" data-page="settings">
+        <div class="settings">
+          <h2>General</h2>
+          <label class="row">
+            <input type="checkbox" id="setting-auto-start" />
+            <span>
+              <strong>Start TimeClock when I sign in</strong>
+              <br />
+              <span class="muted">Launches minimized to tray on login.</span>
+            </span>
+          </label>
+
+          <h2>Database</h2>
+          <p class="muted small">Local SQLite file:</p>
+          <code id="db-path-hint" class="path">computing…</code>
+
+          <h2>WHMCS</h2>
+          <p class="muted small">Sync with WHMCS — coming in a future phase.</p>
+        </div>
+      </section>
+    </main>
+
+    <script src="manager.js"></script>
+  </body>
+</html>

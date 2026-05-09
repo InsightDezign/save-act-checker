@@ -10,15 +10,12 @@ function call(channel, ...args) {
 const ALLOWED_EVENTS = new Set([
   'timer:state-changed',
   'power:event',
-  'app:request-show-panel',
-  'app:request-hide-panel',
-  'app:request-show-manager',
 ]);
 
 contextBridge.exposeInMainWorld('timeclock', {
   timer: {
     start: (taskId) => call('timer:start', taskId),
-    stop: () => call('timer:stop'),
+    stop: (opts) => call('timer:stop', opts),
     pause: () => call('timer:pause'),
     resume: () => call('timer:resume'),
     getState: () => call('timer:getState'),
@@ -44,9 +41,20 @@ contextBridge.exposeInMainWorld('timeclock', {
   app: {
     showPanel: () => call('app:showPanel'),
     hidePanel: () => call('app:hidePanel'),
+    togglePanel: () => call('app:togglePanel'),
     showManager: () => call('app:showManager'),
+    hideFloating: () => call('app:hideFloating'),
+    showFloating: () => call('app:showFloating'),
+    quit: () => call('app:quit'),
     getLastUsed: () => call('app:getLastUsed'),
     setLastUsed: (value) => call('app:setLastUsed', value),
+    getStartOnLogin: () => call('app:getStartOnLogin'),
+    setStartOnLogin: (value) => call('app:setStartOnLogin', value),
+  },
+  floating: {
+    drag: (dx, dy) => ipcRenderer.send('floating:drag', { dx, dy }),
+    dragEnd: () => ipcRenderer.send('floating:drag-end'),
+    openContextMenu: () => call('floating:openContextMenu'),
   },
   on(channel, callback) {
     if (!ALLOWED_EVENTS.has(channel)) {
